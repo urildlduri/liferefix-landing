@@ -4,6 +4,9 @@ export const metadata: Metadata = {
   title: 'Liferefix | AI 개인회생 분석 및 변호사 추천',
   description: 'AI 기반 개인회생 가능성 분석, 탕감률 예측, 변호사 매칭 서비스. 판결문 97건 데이터 기반 무료 진단.',
   keywords: '개인회생, 개인회생변호사, 채무탕감, 회생신청, AI회생분석, 개인회생신청방법, 탕감률',
+  verification: {
+    google: 'Po23qTv3LggXEt-9tra8Pp5cWJNppU9OfI_3pja8Hjc',
+  },
   openGraph: {
     title: 'AI 개인회생 분석 Liferefix',
     description: '무료로 회생 가능성과 변호사를 추천받아보세요',
