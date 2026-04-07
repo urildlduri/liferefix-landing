@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   keywords: '개인회생, 개인회생변호사, 채무탕감, 회생신청, AI회생분석, 개인회생신청방법, 탕감률',
   verification: {
     google: 'Po23qTv3LggXEt-9tra8Pp5cWJNppU9OfI_3pja8Hjc',
+    other: {
+      'naver-site-verification': '3e38bccf6d26d5fb4090e44dd220ebbb1e6b38ba',
+    },
   },
   openGraph: {
     title: 'AI 개인회생 분석 Liferefix',
