@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Liferefix | AI 개인회생 분석 및 변호사 추천',
-  description: 'AI 기반 개인회생 가능성 분석, 탕감률 예측, 변호사 매칭 서비스. 판결문 97건 데이터 기반 무료 진단.',
+  description: 'AI 기반 개인회생 가능성 분석, 탕감률 예측, 변호사 매칭 서비스. 실제 판례 기반 무료 진단.',
   alternates: { canonical: 'https://liferefix.com' },
 }
 
@@ -13,7 +13,7 @@ const P = '#6A3DE8'
 
 const STATS = [
   { value: '72%', label: '평균 채무 감면율' },
-  { value: '97건', label: '판결문 DB' },
+  { value: '실제', label: '판례 기반 분석' },
   { value: '2분', label: 'AI 진단 시간' },
   { value: '4.8★', label: '고객 만족도' },
 ]
@@ -35,14 +35,14 @@ const REVIEWS = [
 ]
 
 const STEPS = [
-  { num: '1', title: 'AI 채무 진단', desc: '채무액·소득·부양가족 정보를 입력하면 판결문 97건 데이터 기반으로 탕감률과 월 변제금을 분석합니다.' },
+  { num: '1', title: 'AI 채무 진단', desc: '채무액·소득·부양가족 정보를 입력하면 실제 판례 기반으로 탕감률과 월 변제금을 분석합니다.' },
   { num: '2', title: '변호사 비딩 수신', desc: '검증된 파트너 변호사들이 착수금·승인율·전략을 직접 제안합니다. 평균 3일 이내 제안 도착.' },
   { num: '3', title: '조건 비교 후 선택', desc: '여러 변호사의 조건을 한눈에 비교하고 본인이 직접 선택합니다. 연락처는 선택 후에만 공개됩니다.' },
 ]
 
 const FAQS = [
   { q: '개인회생 신청 자격이 되나요?', a: '소득이 있거나 소득 발생 가능성이 있는 개인이라면 신청 가능합니다. AI 진단으로 2분 안에 가능성을 확인하세요.' },
-  { q: '탕감률은 얼마나 되나요?', a: '판결문 97건 분석 결과 평균 72% 탕감이 인정됐습니다. 사유·나이·부양가족에 따라 다릅니다.' },
+  { q: '탕감률은 얼마나 되나요?', a: '실제 판례 분석 결과 평균 72% 탕감이 인정됐습니다. 사유·나이·부양가족에 따라 다릅니다.' },
   { q: '변호사 선택은 제가 하나요?', a: '네, 채무자가 직접 변호사를 선택합니다. Liferefix는 연결만 하며 특정 변호사를 추천하지 않습니다.' },
   { q: '비용이 드나요?', a: 'AI 진단과 변호사 제안 수신은 완전 무료입니다. 변호사 선택 후 수임 계약은 당사자 간에 진행됩니다.' },
 ]
@@ -58,7 +58,7 @@ function calcRate(debt: number, inc: number, dep: number): { rate: number; month
   const cap = disp * period
   const ratio = Math.min(cap / debt, 1)
   const base = 1 - ratio
-  const avg = 0.72 // 판결문 97건 평균
+  const avg = 0.72
   const final = Math.max(0.10, Math.min(0.92, base * 0.6 + avg * 0.4))
   const ramt = Math.round(debt * (1 - final))
   const monthly = Math.round(ramt / period)
@@ -66,14 +66,13 @@ function calcRate(debt: number, inc: number, dep: number): { rate: number; month
 }
 
 export default function HomePage() {
-  // 계산기 예시값 (SSG이므로 정적 예시)
   const example = calcRate(5000, 250, 0)
 
   return (
     <main>
       {/* 히어로 */}
       <section style={styles.hero}>
-        <div style={styles.heroBadge}>🤖 AI 채무 분석 플랫폼 · 판결문 97건 기반</div>
+        <div style={styles.heroBadge}>🤖 AI 채무 분석 플랫폼 · 실제 판례 기반</div>
         <h1 style={styles.heroTitle}>채무 해결,<br />이제 데이터로<br />정확하게</h1>
         <p style={styles.heroSub}>개인회생 탕감률·변제금을 AI가 무료 분석하고,<br />검증된 변호사의 경쟁 제안을 받아보세요.</p>
         <a href="https://app.liferefix.com" style={styles.ctaBtn}>⚡ 무료 채무 진단 시작하기</a>
@@ -92,9 +91,8 @@ export default function HomePage() {
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <h2 style={styles.sectionTitle}>📊 탕감률 간이 계산기</h2>
           <p style={{ fontSize: 13, color: '#5A6E85', marginBottom: 20 }}>
-            2026년 최저생계비 기준 · 판결문 97건 평균 적용 · 참고용 수치입니다
+            2026년 최저생계비 기준 · 실제 판례 평균 적용 · 참고용 수치입니다
           </p>
-          {/* 예시 계산 결과 표시 */}
           <div style={{ background: '#F5F3FF', borderRadius: 16, padding: 20, marginBottom: 16 }}>
             <div style={{ fontSize: 13, color: '#5A6E85', marginBottom: 12 }}>
               예시) 채무 5,000만원 · 월소득 250만원 · 부양가족 없음 (1인 가구)
@@ -170,11 +168,11 @@ export default function HomePage() {
           <h2 style={styles.sectionTitle}>개인회생이란?</h2>
           <p style={styles.bodyText}>
             개인회생은 소득이 있는 개인이 법원의 감독 아래 일부 채무를 변제하고 나머지를 면책받는 법적 절차입니다.
-            신용대출, 카드채무, 담보대출 등 대부분의 채무가 대상이며, 판결문 실사례 기준 평균 72%의 채무가 탕감됩니다.
+            신용대출, 카드채무, 담보대출 등 대부분의 채무가 대상이며, 실제 판례 기준 평균 72%의 채무가 탕감됩니다.
             변제 기간은 통상 36개월이며, 2026년 최저생계비 기준이 적용됩니다.
           </p>
           <p style={styles.bodyText}>
-            Liferefix는 실제 판결문 97건을 분석하여 개인별 탕감률과 월 변제금을 예측합니다.
+            Liferefix는 실제 판례를 분석하여 개인별 탕감률과 월 변제금을 예측합니다.
             사유별(사업실패·생활비·병원비 등), 나이대별, 법원별 통계를 반영한 AI 모델로
             보다 정확한 진단이 가능합니다.
           </p>
@@ -264,7 +262,7 @@ export default function HomePage() {
       {/* 하단 CTA */}
       <section style={styles.bottomCta}>
         <h2 style={styles.bottomCtaTitle}>지금 바로 무료 진단을 받아보세요</h2>
-        <p style={styles.bottomCtaSub}>2분이면 충분합니다. 판결문 97건 기반 AI 분석.</p>
+        <p style={styles.bottomCtaSub}>2분이면 충분합니다. 실제 판례 기반 AI 분석.</p>
         <a href="https://app.liferefix.com" style={styles.ctaBtn}>무료 진단 시작하기 →</a>
       </section>
 
