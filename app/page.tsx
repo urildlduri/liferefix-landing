@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Liferefix | AI 개인회생 분석 및 변호사 추천',
-  description: 'AI 기반 개인회생 가능성 분석, 탕감률 예측, 변호사 매칭 서비스. 실제 판례 기반 무료 진단.',
+  title: 'Liferefix | AI 개인회생 분석 및 수임료 견적 비교',
+  description: 'AI 기반 개인회생 가능성 분석, 탕감률 예측, 수임료 견적 비교 서비스. 실제 판례 기반 무료 진단.',
   alternates: { canonical: 'https://liferefix.com' },
 }
 
@@ -27,27 +27,26 @@ const MARKET = [
 ]
 
 const REVIEWS = [
-  { name: '김○○', age: '40대', debt: '8,500만원', rate: '74%', text: '처음엔 너무 막막했는데 AI 진단으로 탕감 가능성을 확인하고 용기를 냈어요. 변호사 3명이 제안을 보내줘서 비교하고 선택할 수 있었습니다.', stars: 5 },
-  { name: '이○○', age: '30대', debt: '5,200만원', rate: '68%', text: '변호사를 어떻게 찾아야 할지 몰랐는데 여러 분이 직접 제안해주시니 편했어요. 착수금도 다른 곳보다 훨씬 합리적이었습니다.', stars: 5 },
+  { name: '김○○', age: '40대', debt: '8,500만원', rate: '74%', text: '처음엔 너무 막막했는데 AI 진단으로 탕감 가능성을 확인하고 용기를 냈어요. 변호사 3명의 견적을 비교하고 선택할 수 있었습니다.', stars: 5 },
+  { name: '이○○', age: '30대', debt: '5,200만원', rate: '68%', text: '변호사를 어떻게 찾아야 할지 몰랐는데 여러 분이 직접 견적을 보내주시니 편했어요. 착수금도 다른 곳보다 훨씬 합리적이었습니다.', stars: 5 },
   { name: '박○○', age: '50대', debt: '1억 2천만원', rate: '81%', text: '사업 실패 후 막막했는데 진단 결과를 보고 희망이 생겼어요. 선택한 변호사 선생님이 끝까지 잘 도와주셨습니다.', stars: 5 },
   { name: '최○○', age: '20대', debt: '3,800만원', rate: '62%', text: '젊은 나이에 빚이 생겨서 부끄럽고 망설였는데, 익명으로 진행되니 편하게 알아볼 수 있었어요.', stars: 4 },
-  { name: '정○○', age: '40대', debt: '6,700만원', rate: '71%', text: '변호사별로 착수금·승인율·전략을 한눈에 비교하니까 선택이 쉬웠어요. 정말 좋은 서비스입니다.', stars: 5 },
+  { name: '정○○', age: '40대', debt: '6,700만원', rate: '71%', text: '변호사별 견적을 한눈에 비교하니까 선택이 쉬웠어요. 정말 좋은 서비스입니다.', stars: 5 },
 ]
 
 const STEPS = [
   { num: '1', title: 'AI 채무 진단', desc: '채무액·소득·부양가족 정보를 입력하면 실제 판례 기반으로 탕감률과 월 변제금을 분석합니다.' },
-  { num: '2', title: '변호사 비딩 수신', desc: '검증된 파트너 변호사들이 착수금·승인율·전략을 직접 제안합니다. 평균 3일 이내 제안 도착.' },
-  { num: '3', title: '조건 비교 후 선택', desc: '여러 변호사의 조건을 한눈에 비교하고 본인이 직접 선택합니다. 연락처는 선택 후에만 공개됩니다.' },
+  { num: '2', title: '수임료 견적 수신', desc: '검증된 파트너 변호사들이 착수금·승인율·전략을 담아 직접 견적을 제안합니다. 평균 3일 이내 도착.' },
+  { num: '3', title: '조건 비교 후 선택', desc: '여러 변호사의 견적을 한눈에 비교하고 본인이 직접 선택합니다. 연락처는 선택 후에만 공개됩니다.' },
 ]
 
 const FAQS = [
   { q: '개인회생 신청 자격이 되나요?', a: '소득이 있거나 소득 발생 가능성이 있는 개인이라면 신청 가능합니다. AI 진단으로 2분 안에 가능성을 확인하세요.' },
   { q: '탕감률은 얼마나 되나요?', a: '실제 판례 분석 결과 평균 72% 탕감이 인정됐습니다. 사유·나이·부양가족에 따라 다릅니다.' },
   { q: '변호사 선택은 제가 하나요?', a: '네, 채무자가 직접 변호사를 선택합니다. Liferefix는 연결만 하며 특정 변호사를 추천하지 않습니다.' },
-  { q: '비용이 드나요?', a: 'AI 진단과 변호사 제안 수신은 완전 무료입니다. 변호사 선택 후 수임 계약은 당사자 간에 진행됩니다.' },
+  { q: '비용이 드나요?', a: 'AI 진단과 변호사 견적 수신은 완전 무료입니다. 변호사 선택 후 수임 계약은 당사자 간에 진행됩니다.' },
 ]
 
-// 간이 탕감률 계산 (2026년 최저생계비 기준)
 function calcRate(debt: number, inc: number, dep: number): { rate: number; monthly: number; ok: boolean; reason?: string } {
   const LIVING: Record<number, number> = { 0: 154, 1: 252, 2: 322, 3: 390, 4: 453 }
   const minC = LIVING[Math.min(dep, 4)]
@@ -74,7 +73,7 @@ export default function HomePage() {
       <section style={styles.hero}>
         <div style={styles.heroBadge}>🤖 AI 채무 분석 플랫폼 · 실제 판례 기반</div>
         <h1 style={styles.heroTitle}>채무 해결,<br />이제 데이터로<br />정확하게</h1>
-        <p style={styles.heroSub}>개인회생 탕감률·변제금을 AI가 무료 분석하고,<br />검증된 변호사의 경쟁 제안을 받아보세요.</p>
+        <p style={styles.heroSub}>개인회생 탕감률·변제금을 AI가 무료 분석하고,<br />검증된 변호사의 수임료 견적을 받아보세요.</p>
         <a href="https://app.liferefix.com" style={styles.ctaBtn}>⚡ 무료 채무 진단 시작하기</a>
         <div style={styles.statsRow}>
           {STATS.map(s => (
@@ -111,7 +110,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* 2026년 최저생계비 기준 표 */}
           <div style={{ background: '#F5F3FF', borderRadius: 12, padding: 16, marginBottom: 16 }}>
             <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 10, color: '#0D1B2A' }}>2026년 최저생계비 기준 (기준 중위소득 60%)</div>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
@@ -234,7 +232,7 @@ export default function HomePage() {
             </Link>
             <Link href="/lawyers" style={styles.linkCard}>
               <span style={styles.linkIcon}>⚖️</span>
-              <span style={styles.linkTitle}>변호사 비딩</span>
+              <span style={styles.linkTitle}>수임료 견적 비교</span>
               <span style={styles.linkSub}>변호사 선택 방법</span>
             </Link>
             <Link href="/about" style={styles.linkCard}>
@@ -268,9 +266,9 @@ export default function HomePage() {
 
       {/* 법적 고지 */}
       <footer style={styles.footer}>
-        <p>© 2026 Liferefix. All rights reserved. Beta v1.5</p>
+        <p>© 2026 Liferefix. All rights reserved. Beta v1.6</p>
         <p style={{ marginTop: 6 }}>본 서비스는 정보 제공 목적이며 법률 서비스가 아닙니다. AI 분석 결과는 참고용이며 법적 효력이 없습니다.</p>
-        <p style={{ marginTop: 6 }}>문의: admin@liferefix.com</p>
+        <p style={{ marginTop: 6 }}>문의: liferefix@naver.com</p>
       </footer>
     </main>
   )
