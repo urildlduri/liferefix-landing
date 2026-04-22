@@ -36,7 +36,7 @@ const REVIEWS = [
 
 const STEPS = [
   { num: '1', title: 'AI 채무 진단', desc: '채무액·소득·부양가족 정보를 입력하면 실제 판례 기반으로 탕감률과 월 변제금을 분석합니다.' },
-  { num: '2', title: '수임료 견적 수신', desc: '검증된 파트너 변호사들이 착수금·승인율·전략을 담아 직접 견적을 제안합니다. 평균 3일 이내 도착.' },
+  { num: '2', title: '수임료 견적 수신', desc: '검증된 파트너 변호사들이 사건을 검토한 후 독립적으로 견적을 제출합니다. 타 변호사 견적은 상호 공개되지 않으며, 평균 3일 이내 도착.' },
   { num: '3', title: '조건 비교 후 선택', desc: '여러 변호사의 견적을 한눈에 비교하고 본인이 직접 선택합니다. 연락처는 선택 후에만 공개됩니다.' },
 ]
 
@@ -45,6 +45,8 @@ const FAQS = [
   { q: '탕감률은 얼마나 되나요?', a: '실제 판례 분석 결과 평균 72% 탕감이 인정됐습니다. 사유·나이·부양가족에 따라 다릅니다.' },
   { q: '변호사 선택은 제가 하나요?', a: '네, 채무자가 직접 변호사를 선택합니다. Liferefix는 연결만 하며 특정 변호사를 추천하지 않습니다.' },
   { q: '비용이 드나요?', a: 'AI 진단과 변호사 견적 수신은 완전 무료입니다. 변호사 선택 후 수임 계약은 당사자 간에 진행됩니다.' },
+  { q: '변호사들이 서로 경쟁하는 구조인가요?', a: '아닙니다. 각 변호사는 사건 정보를 검토한 후 독립적으로 견적을 제출합니다. 타 변호사의 견적 내용은 상호 공개되지 않으며, 의뢰인이 직접 비교 선택합니다.' },
+  { q: 'Liferefix의 수익구조는 어떻게 되나요?', a: 'Liferefix는 월 정액 구독 기반의 SaaS 플랫폼입니다. 변호사는 월 구독료로 기본 슬롯을 확보하며, 특정 사건 매칭에 대한 건별 대가는 없습니다. 사건 소개비 구조가 아닙니다.' },
 ]
 
 function calcRate(debt: number, inc: number, dep: number): { rate: number; monthly: number; ok: boolean; reason?: string } {
@@ -73,7 +75,7 @@ export default function HomePage() {
       <section style={styles.hero}>
         <div style={styles.heroBadge}>🤖 AI 채무 분석 플랫폼 · 실제 판례 기반</div>
         <h1 style={styles.heroTitle}>채무 해결,<br />이제 데이터로<br />정확하게</h1>
-        <p style={styles.heroSub}>개인회생 탕감률·변제금을 AI가 무료 분석하고,<br />검증된 변호사의 수임료 견적을 받아보세요.</p>
+        <p style={styles.heroSub}>개인회생 탕감률·변제금을 AI가 무료 분석하고,<br />검증된 변호사의 수임료 견적을 받아보세요.<br /><span style={{fontSize:11,opacity:0.7}}>AI 분석은 참고용이며 법적 효력이 없습니다.</span></p>
         <a href="https://app.liferefix.com" style={styles.ctaBtn}>⚡ 무료 채무 진단 시작하기</a>
         <div style={styles.statsRow}>
           {STATS.map(s => (
@@ -267,7 +269,7 @@ export default function HomePage() {
       {/* 법적 고지 */}
       <footer style={styles.footer}>
         <p>© 2026 Liferefix. All rights reserved. Beta v1.6</p>
-        <p style={{ marginTop: 6 }}>본 서비스는 정보 제공 목적이며 법률 서비스가 아닙니다. AI 분석 결과는 참고용이며 법적 효력이 없습니다.</p>
+        <p style={{ marginTop: 6 }}>본 서비스는 정보 제공 목적이며 법률 서비스가 아닙니다. AI 분석 결과는 참고용이며 법적 효력이 없습니다. 최종 판단은 반드시 전문 변호사 상담을 통해 결정하십시오.</p>
         <p style={{ marginTop: 6 }}>문의: liferefix@naver.com</p>
       </footer>
     </main>
