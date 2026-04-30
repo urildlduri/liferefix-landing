@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Liferefix 소개 | AI 개인회생 분석 플랫폼',
-  description: 'Liferefix는 판결문 97건 기반 AI 채무 진단과 변호사 비딩 매칭 서비스를 제공하는 법률 테크 스타트업입니다.',
+  description: 'Liferefix는 실제 판례 기반 AI 채무 진단과 변호사 견적 비교 플랫폼을 제공하는 법률 테크 서비스입니다.',
   alternates: { canonical: 'https://liferefix.com/about' },
 }
 
@@ -25,21 +25,42 @@ export default function AboutPage() {
           진행할 수 있도록 돕는 AI 기반 법률 테크 플랫폼입니다.
         </p>
         <p style={{ fontSize: 14, lineHeight: 1.85, color: '#3A4F65', marginBottom: 32 }}>
-          실제 판결문 97건을 분석하여 개인별 탕감률·월변제금을 예측하고,
-          검증된 파트너 변호사들이 경쟁 제안을 통해 합리적인 수임료로 수임할 수 있도록 연결합니다.
+          실제 판례 통계를 분석하여 개인별 탕감률·월변제금을 예측하고,
+          검증된 파트너 변호사들이 독립적으로 견적을 제출하면 채무자가 직접 비교·선택할 수 있도록 연결합니다.
+          이를 통해 정보 비대칭 없이 합리적인 비용으로 개인회생을 진행할 수 있습니다.
         </p>
 
-        <div style={{ background: '#F5F3FF', borderRadius: 16, padding: '20px', marginBottom: 32 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 12, color: '#0D1B2A' }}>법적 안내</h3>
-          <p style={{ fontSize: 13, lineHeight: 1.75, color: '#5A6E85', margin: 0 }}>
-            본 서비스는 정보 제공 목적이며 법률 서비스를 직접 제공하지 않습니다.
-            AI 분석 결과는 참고용이며 실제 법원 결정과 다를 수 있습니다.
-            채무자와 변호사는 Liferefix를 통해 연결되며, 수임 계약은 당사자 간에 체결됩니다.
+        <h2 style={{ fontSize: 18, fontWeight: 900, marginBottom: 12 }}>핵심 가치</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
+          <div style={{ background: '#F5F3FF', borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#0D1B2A', marginBottom: 4 }}>📊 데이터 기반 진단</div>
+            <div style={{ fontSize: 13, color: '#5A6E85', lineHeight: 1.65 }}>실제 판례 통계를 학습한 AI 모델로 객관적 진단 결과를 제공합니다.</div>
+          </div>
+          <div style={{ background: '#F5F3FF', borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#0D1B2A', marginBottom: 4 }}>🔒 정보 보호</div>
+            <div style={{ fontSize: 13, color: '#5A6E85', lineHeight: 1.65 }}>채무자의 연락처는 본인이 변호사를 선택한 후에만 공개됩니다.</div>
+          </div>
+          <div style={{ background: '#F5F3FF', borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#0D1B2A', marginBottom: 4 }}>⚖️ 채무자 선택권</div>
+            <div style={{ fontSize: 13, color: '#5A6E85', lineHeight: 1.65 }}>플랫폼은 특정 변호사를 추천하지 않으며, 모든 선택은 채무자가 직접 합니다.</div>
+          </div>
+        </div>
+
+        <div style={{ background: '#F0FDF9', borderRadius: 16, padding: '20px', marginBottom: 32, border: '1px solid #B2DFDB' }}>
+          <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 12, color: '#005945' }}>⚖️ 법적 안내</h3>
+          <p style={{ fontSize: 13, lineHeight: 1.75, color: '#2D6A5A', margin: 0 }}>
+            본 서비스는 정보 제공 목적이며 법률 자문이나 변호사 알선 서비스를 제공하지 않습니다.
+            AI 분석 결과는 참고용이며 법적 효력이 없으며, 실제 법원 결정과 다를 수 있습니다.
+            채무자와 변호사는 Liferefix를 통해 연결되며, 수임 계약은 당사자 간에 직접 체결됩니다.
+            본 플랫폼의 변호사 구독료는 정액 SaaS 이용료이며 사건 소개비와 무관하므로
+            <b> 변호사법 제34조의 알선 수수료 규정과 무관합니다.</b>
           </p>
         </div>
 
         <h2 style={{ fontSize: 18, fontWeight: 900, marginBottom: 12 }}>문의</h2>
-        <p style={{ fontSize: 14, color: '#3A4F65' }}>이메일: admin@liferefix.com</p>
+        <p style={{ fontSize: 14, color: '#3A4F65', marginBottom: 4 }}>
+          이메일: <a href="mailto:contact@liferefix.com" style={{ color: '#6A3DE8', fontWeight: 600 }}>contact@liferefix.com</a>
+        </p>
         <p style={{ fontSize: 14, color: '#3A4F65' }}>사업자 등록: 준비중</p>
       </div>
     </main>
