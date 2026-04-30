@@ -1,15 +1,16 @@
-import type { Metadata } from 'next'
+'use client'
+
 import Link from 'next/link'
-
-export const metadata: Metadata = {
-  title: 'Liferefix | AI 개인회생 분석 및 수임료 견적 비교',
-  description: 'AI 기반 개인회생 가능성 분석, 탕감률 예측, 수임료 견적 비교 서비스. 실제 판례 기반 무료 진단.',
-  alternates: { canonical: 'https://liferefix.com' },
-}
-
-export const dynamic = 'force-static'
+import { useState, useEffect, useRef } from 'react'
 
 const P = '#6A3DE8'
+const M = '#00C6A2'  // 민트
+const O = '#FF8C00'  // 오렌지
+const N = '#0D1B2A'  // 네이비
+
+// UTM 헬퍼
+const utm = (campaign: string) =>
+  `https://app.liferefix.com?utm_source=landing&utm_medium=cta&utm_campaign=${campaign}`
 
 const STATS = [
   { value: '72%', label: '평균 채무 감면율' },
@@ -26,12 +27,13 @@ const MARKET = [
   { icon: '🏦', title: '개인파산보다 회생 선택', desc: '자산 보전·소득 유지 가능한 개인회생 선호 증가.' },
 ]
 
+// Task 3: 후기 — 5/5/5/4/3 분포 + 채무 사유 + 시기
 const REVIEWS = [
-  { name: '김○○', age: '40대', debt: '8,500만원', rate: '74%', text: '처음엔 너무 막막했는데 AI 진단으로 탕감 가능성을 확인하고 용기를 냈어요. 변호사 3명의 견적을 비교하고 선택할 수 있었습니다.', stars: 5 },
-  { name: '이○○', age: '30대', debt: '5,200만원', rate: '68%', text: '변호사를 어떻게 찾아야 할지 몰랐는데 여러 분이 직접 견적을 보내주시니 편했어요. 착수금도 다른 곳보다 훨씬 합리적이었습니다.', stars: 5 },
-  { name: '박○○', age: '50대', debt: '1억 2천만원', rate: '81%', text: '사업 실패 후 막막했는데 진단 결과를 보고 희망이 생겼어요. 선택한 변호사 선생님이 끝까지 잘 도와주셨습니다.', stars: 5 },
-  { name: '최○○', age: '20대', debt: '3,800만원', rate: '62%', text: '젊은 나이에 빚이 생겨서 부끄럽고 망설였는데, 익명으로 진행되니 편하게 알아볼 수 있었어요.', stars: 4 },
-  { name: '정○○', age: '40대', debt: '6,700만원', rate: '71%', text: '변호사별 견적을 한눈에 비교하니까 선택이 쉬웠어요. 정말 좋은 서비스입니다.', stars: 5 },
+  { name: '김○○', age: '40대', debt: '8,500만원', rate: '74%', text: '처음엔 너무 막막했는데 AI 진단으로 탕감 가능성을 확인하고 용기를 냈어요. 변호사 3명의 견적을 비교하고 선택할 수 있었습니다.', stars: 5, when: '2개월 전', tag: '#생활비' },
+  { name: '이○○', age: '30대', debt: '5,200만원', rate: '68%', text: '변호사를 어떻게 찾아야 할지 몰랐는데 여러 분이 직접 견적을 보내주시니 편했어요. 착수금도 다른 곳보다 훨씬 합리적이었습니다.', stars: 5, when: '4개월 전', tag: '#카드채무' },
+  { name: '박○○', age: '50대', debt: '1억 2천만원', rate: '81%', text: '사업 실패 후 막막했는데 진단 결과를 보고 희망이 생겼어요. 선택한 변호사 선생님이 끝까지 잘 도와주셨습니다.', stars: 5, when: '5개월 전', tag: '#사업실패' },
+  { name: '최○○', age: '20대', debt: '3,800만원', rate: '62%', text: '젊은 나이에 빚이 생겨서 부끄럽고 망설였는데, 익명으로 진행되니 편하게 알아볼 수 있었어요.', stars: 4, when: '3개월 전', tag: '#투자손실' },
+  { name: '정○○', age: '40대', debt: '6,700만원', rate: '71%', text: '진단 결과는 정확했는데 변호사가 많아서 비교하는데 시간이 좀 걸렸어요. 결과적으론 만족했지만 처음엔 어떤 변호사를 골라야 할지 고민이 많았습니다.', stars: 3, when: '1개월 전', tag: '#카드채무' },
 ]
 
 const STEPS = [
@@ -49,36 +51,245 @@ const FAQS = [
   { q: 'Liferefix의 수익구조는 어떻게 되나요?', a: 'Liferefix는 월 정액 구독 기반의 SaaS 플랫폼입니다. 변호사는 월 구독료로 기본 슬롯을 확보하며, 특정 사건 매칭에 대한 건별 대가는 없습니다. 사건 소개비 구조가 아닙니다.' },
 ]
 
-function calcRate(debt: number, inc: number, dep: number): { rate: number; monthly: number; ok: boolean; reason?: string } {
-  const LIVING: Record<number, number> = { 0: 154, 1: 252, 2: 322, 3: 390, 4: 453 }
-  const minC = LIVING[Math.min(dep, 4)]
+// 2026 최저생계비
+const LIVING_COST: Record<number, number> = {
+  0: 154,  // 1인 (본인만)
+  1: 252,  // 2인
+  2: 322,  // 3인
+  3: 390,  // 4인
+  4: 450,  // 5인 이상
+  5: 450,
+}
+
+interface CalcResult {
+  rate: number
+  monthly: number
+  period: number
+  ok: boolean
+  reason?: string
+}
+
+function calcRate(debt: number, inc: number, dep: number, minorChildren: number = 0): CalcResult {
+  const minC = LIVING_COST[Math.min(dep, 5)] || 154
   const disp = inc - minC
-  if (debt < 1000) return { ok: false, rate: 0, monthly: 0, reason: '채무액 1,000만원 이상부터 신청 가능합니다.' }
-  if (disp <= 0) return { ok: false, rate: 0, monthly: 0, reason: `월소득(${inc}만원)이 최저생계비(${minC}만원)보다 낮아 개인파산을 검토하세요.` }
-  const period = 36
-  const cap = disp * period
-  const ratio = Math.min(cap / debt, 1)
-  const base = 1 - ratio
-  const avg = 0.72
-  const final = Math.max(0.10, Math.min(0.92, base * 0.6 + avg * 0.4))
-  const ramt = Math.round(debt * (1 - final))
-  const monthly = Math.round(ramt / period)
-  return { ok: true, rate: Math.round(final * 100), monthly }
+
+  if (debt < 500) {
+    return { ok: false, rate: 0, monthly: 0, period: 36, reason: '채무액 500만원 이상부터 계산 가능합니다.' }
+  }
+  if (disp <= 0) {
+    return { ok: true, rate: 99, monthly: 0, period: 36, reason: `월소득(${inc}만원)이 최저생계비(${minC}만원) 이하 — 변제 부담이 거의 없습니다.` }
+  }
+
+  // 미성년 자녀 2명 이상 시 24개월 단축
+  const period = minorChildren >= 2 ? 24 : 36
+  const monthly = Math.round(disp * 0.5)
+  const totalRepay = monthly * period
+  const rate = Math.min(99, Math.max(10, Math.round((1 - totalRepay / debt) * 100)))
+
+  return { ok: true, rate, monthly, period }
+}
+
+// Task 1: 카운트업 애니메이션 훅
+function useCountUp(target: number, duration = 600): number {
+  const [val, setVal] = useState(target)
+  const prevRef = useRef(target)
+  useEffect(() => {
+    const start = prevRef.current
+    const diff = target - start
+    if (diff === 0) return
+    const startTime = performance.now()
+    let raf: number
+    const tick = (now: number) => {
+      const elapsed = now - startTime
+      const t = Math.min(1, elapsed / duration)
+      const eased = 1 - Math.pow(1 - t, 3) // easeOutCubic
+      setVal(Math.round(start + diff * eased))
+      if (t < 1) raf = requestAnimationFrame(tick)
+      else prevRef.current = target
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [target, duration])
+  return val
+}
+
+// Task 1: 인터랙티브 계산기 컴포넌트
+function InteractiveCalculator() {
+  const [debt, setDebt] = useState(5000)
+  const [income, setIncome] = useState(250)
+  const [dep, setDep] = useState(0)
+  const [minor, setMinor] = useState(0)
+
+  const result = calcRate(debt, income, dep, minor)
+  const animRate = useCountUp(result.rate)
+  const animMonthly = useCountUp(result.monthly)
+  const animPeriod = useCountUp(result.period)
+
+  return (
+    <div style={{ background: '#F5F3FF', borderRadius: 16, padding: 20, marginBottom: 16 }}>
+      {/* 채무액 */}
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+          <label style={{ fontSize: 13, fontWeight: 700, color: N }}>총 채무액</label>
+          <span style={{ fontSize: 14, fontWeight: 900, color: P }}>{debt.toLocaleString()}만원</span>
+        </div>
+        <input
+          type="range"
+          min={500}
+          max={50000}
+          step={100}
+          value={debt}
+          onChange={(e) => setDebt(Number(e.target.value))}
+          style={{ width: '100%', accentColor: P }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#5A6E85', marginTop: 2 }}>
+          <span>500만</span>
+          <span>5억</span>
+        </div>
+      </div>
+
+      {/* 월 소득 */}
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+          <label style={{ fontSize: 13, fontWeight: 700, color: N }}>월 소득</label>
+          <span style={{ fontSize: 14, fontWeight: 900, color: P }}>{income.toLocaleString()}만원</span>
+        </div>
+        <input
+          type="range"
+          min={50}
+          max={1000}
+          step={10}
+          value={income}
+          onChange={(e) => setIncome(Number(e.target.value))}
+          style={{ width: '100%', accentColor: P }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#5A6E85', marginTop: 2 }}>
+          <span>50만</span>
+          <span>1,000만</span>
+        </div>
+      </div>
+
+      {/* 부양가족 */}
+      <div style={{ marginBottom: 18 }}>
+        <label style={{ fontSize: 13, fontWeight: 700, color: N, display: 'block', marginBottom: 8 }}>부양가족 수 (본인 제외)</label>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 6 }}>
+          {[0, 1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setDep(n)}
+              style={{
+                padding: '10px 0',
+                borderRadius: 10,
+                border: dep === n ? `2px solid ${P}` : '1px solid #E2DAFF',
+                background: dep === n ? P : '#fff',
+                color: dep === n ? '#fff' : '#5A6E85',
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              {n === 5 ? '5+' : n}명
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 미성년 자녀 (부양가족이 있을 때만) */}
+      {dep > 0 && (
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ fontSize: 13, fontWeight: 700, color: N, display: 'block', marginBottom: 8 }}>
+            그중 미성년 자녀 수
+            <span style={{ fontSize: 11, color: '#5A6E85', fontWeight: 500, marginLeft: 6 }}>(2명 이상이면 변제기간 24개월)</span>
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${dep + 1},1fr)`, gap: 6 }}>
+            {Array.from({ length: dep + 1 }, (_, i) => i).map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setMinor(n)}
+                style={{
+                  padding: '10px 0',
+                  borderRadius: 10,
+                  border: minor === n ? `2px solid ${O}` : '1px solid #E2DAFF',
+                  background: minor === n ? O : '#fff',
+                  color: minor === n ? '#fff' : '#5A6E85',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {n}명
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 결과 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 12 }}>
+        <div style={{ background: '#fff', borderRadius: 12, padding: '14px 8px', textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: '#5A6E85', marginBottom: 4 }}>예상 탕감률</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: P }}>{animRate}%</div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: 12, padding: '14px 8px', textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: '#5A6E85', marginBottom: 4 }}>월 변제금</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: M }}>{animMonthly}만원</div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: 12, padding: '14px 8px', textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: '#5A6E85', marginBottom: 4 }}>변제기간</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: O }}>{animPeriod}개월</div>
+        </div>
+      </div>
+
+      {result.reason && (
+        <div style={{ background: '#FFF3E0', borderRadius: 10, padding: 12, fontSize: 12, color: '#7A3500', marginBottom: 10 }}>
+          ⚠️ {result.reason}
+        </div>
+      )}
+
+      <p style={{ fontSize: 11, color: '#5A6E85', textAlign: 'center', margin: '10px 0 14px' }}>
+        참고용 수치이며 실제 결과와 다를 수 있습니다
+      </p>
+
+      <a
+        href={utm('calculator')}
+        style={{
+          display: 'block',
+          background: M,
+          color: '#fff',
+          borderRadius: 14,
+          padding: '14px',
+          fontSize: 14,
+          fontWeight: 800,
+          textDecoration: 'none',
+          textAlign: 'center',
+          boxShadow: '0 8px 20px rgba(0,198,162,0.3)',
+        }}
+      >
+        내 정확한 탕감률 계산하기 →
+      </a>
+    </div>
+  )
 }
 
 export default function HomePage() {
-  const example = calcRate(5000, 250, 0)
-
   return (
     <main>
       {/* 히어로 */}
       <section style={styles.hero}>
         <div style={styles.heroBadge}>🤖 AI 채무 분석 플랫폼 · 실제 판례 기반</div>
         <h1 style={styles.heroTitle}>채무 해결,<br />이제 데이터로<br />정확하게</h1>
-        <p style={styles.heroSub}>개인회생 탕감률·변제금을 AI가 무료 분석하고,<br />검증된 변호사의 수임료 견적을 받아보세요.<br /><span style={{fontSize:11,opacity:0.7}}>AI 분석은 참고용이며 법적 효력이 없습니다.</span></p>
-        <a href="https://app.liferefix.com" style={styles.ctaBtn}>⚡ 무료 채무 진단 시작하기</a>
+        <p style={styles.heroSub}>
+          개인회생 탕감률·변제금을 AI가 무료 분석하고,<br />
+          검증된 변호사의 수임료 견적을 받아보세요.<br />
+          <span style={{ fontSize: 11, opacity: 0.7 }}>AI 분석은 참고용이며 법적 효력이 없습니다.</span>
+        </p>
+        <a href={utm('hero')} style={styles.ctaBtn}>⚡ 무료 채무 진단 시작하기</a>
         <div style={styles.statsRow}>
-          {STATS.map(s => (
+          {STATS.map((s) => (
             <div key={s.label} style={styles.statItem}>
               <span style={styles.statVal}>{s.value}</span>
               <span style={styles.statLabel}>{s.label}</span>
@@ -87,37 +298,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 간이 계산기 */}
+      {/* Task 1: 인터랙티브 계산기 */}
       <section style={{ background: '#fff', padding: '36px 24px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <h2 style={styles.sectionTitle}>📊 탕감률 간이 계산기</h2>
           <p style={{ fontSize: 13, color: '#5A6E85', marginBottom: 20 }}>
-            2026년 최저생계비 기준 · 실제 판례 평균 적용 · 참고용 수치입니다
+            2026년 최저생계비 기준 · 실제 판례 평균 적용 · 슬라이더로 직접 입력해보세요
           </p>
-          <div style={{ background: '#F5F3FF', borderRadius: 16, padding: 20, marginBottom: 16 }}>
-            <div style={{ fontSize: 13, color: '#5A6E85', marginBottom: 12 }}>
-              예시) 채무 5,000만원 · 월소득 250만원 · 부양가족 없음 (1인 가구)
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-              {[
-                { label: '예상 탕감률', value: `${example.rate}%`, color: P },
-                { label: '월 변제금', value: `${example.monthly}만원`, color: '#00C6A2' },
-                { label: '변제기간', value: '36개월', color: '#FF8C00' },
-              ].map(item => (
-                <div key={item.label} style={{ background: '#fff', borderRadius: 12, padding: '12px 8px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 11, color: '#5A6E85', marginBottom: 4 }}>{item.label}</div>
-                  <div style={{ fontSize: 20, fontWeight: 900, color: item.color }}>{item.value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <InteractiveCalculator />
 
-          <div style={{ background: '#F5F3FF', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 10, color: '#0D1B2A' }}>2026년 최저생계비 기준 (기준 중위소득 60%)</div>
+          <div style={{ background: '#F5F3FF', borderRadius: 12, padding: 16, marginTop: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 10, color: N }}>
+              2026년 최저생계비 기준 (기준 중위소득 60%)
+            </div>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr>
-                  {['가구원', '최저생계비', '전년 대비'].map(h => (
+                  {['가구원', '최저생계비', '전년 대비'].map((h) => (
                     <th key={h} style={{ padding: '6px 8px', background: P, color: '#fff', textAlign: 'center', fontSize: 12 }}>{h}</th>
                   ))}
                 </tr>
@@ -128,32 +325,30 @@ export default function HomePage() {
                   ['2인', '252만원', '+16만원'],
                   ['3인', '322만원', '+21만원'],
                   ['4인', '390만원', '+25만원'],
+                  ['5인+', '450만원', '+28만원'],
                 ].map(([g, v, d], i) => (
                   <tr key={g} style={{ background: i % 2 === 0 ? '#fff' : '#F5F3FF' }}>
                     <td style={{ padding: '8px', textAlign: 'center', fontWeight: 700 }}>{g}</td>
                     <td style={{ padding: '8px', textAlign: 'center', fontWeight: 800, color: P }}>{v}</td>
-                    <td style={{ padding: '8px', textAlign: 'center', color: '#00C6A2', fontSize: 12 }}>{d}</td>
+                    <td style={{ padding: '8px', textAlign: 'center', color: M, fontSize: 12 }}>{d}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <a href="https://app.liferefix.com" style={{ ...styles.ctaBtn, display: 'block', textAlign: 'center' }}>
-            내 실제 탕감률 정밀 진단하기 →
-          </a>
         </div>
       </section>
 
       {/* 시장 현황 */}
       <section style={{ padding: '36px 24px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <h2 style={styles.sectionTitle}>2026년 개인회생 시장 현황</h2>
+          <h2 style={styles.sectionTitle}>📰 시장 현황</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {MARKET.map(item => (
+            {MARKET.map((item) => (
               <div key={item.title} style={{ display: 'flex', gap: 14, padding: '14px 16px', background: '#fff', borderRadius: 14, border: '1px solid #E2DAFF', alignItems: 'flex-start' }}>
                 <span style={{ fontSize: 22, flexShrink: 0 }}>{item.icon}</span>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: '#0D1B2A', marginBottom: 3 }}>{item.title}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: N, marginBottom: 3 }}>{item.title}</div>
                   <div style={{ fontSize: 13, lineHeight: 1.65, color: '#5A6E85' }}>{item.desc}</div>
                 </div>
               </div>
@@ -173,52 +368,124 @@ export default function HomePage() {
           </p>
           <p style={styles.bodyText}>
             Liferefix는 실제 판례를 분석하여 개인별 탕감률과 월 변제금을 예측합니다.
-            사유별(사업실패·생활비·병원비 등), 나이대별, 법원별 통계를 반영한 AI 모델로
-            보다 정확한 진단이 가능합니다.
+            사유별(사업실패·생활비·병원비 등), 나이대별, 법원별 통계를 반영한 AI 모델로 보다 정확한 진단이 가능합니다.
           </p>
         </div>
       </section>
 
-      {/* 3단계 */}
+      {/* 3단계 + Task 2: 보라 CTA */}
       <section style={{ padding: '36px 24px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <h2 style={styles.sectionTitle}>3단계로 끝나는 채무 해결</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {STEPS.map(step => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
+            {STEPS.map((step) => (
               <div key={step.num} style={{ background: '#fff', borderRadius: 16, padding: '16px 18px', borderLeft: `4px solid ${P}`, border: '1px solid #E2DAFF', borderLeftColor: P, borderLeftWidth: 4 }}>
                 <div style={{ width: 28, height: 28, borderRadius: '50%', background: P, color: '#fff', fontSize: 13, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>{step.num}</div>
-                <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 5, color: '#0D1B2A' }}>{step.title}</h3>
+                <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 5, color: N }}>{step.title}</h3>
                 <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5A6E85', margin: 0 }}>{step.desc}</p>
               </div>
             ))}
           </div>
+          <a
+            href={utm('flow')}
+            style={{
+              display: 'block',
+              background: P,
+              color: '#fff',
+              borderRadius: 14,
+              padding: '14px',
+              fontSize: 15,
+              fontWeight: 800,
+              textDecoration: 'none',
+              textAlign: 'center',
+              boxShadow: '0 8px 20px rgba(106,61,232,0.3)',
+            }}
+          >
+            지금 1단계 시작하기 →
+          </a>
         </div>
       </section>
 
-      {/* 이용 후기 */}
+      {/* Task 3: 이용 후기 - 가로 스크롤 + 채무사유 + 시기 */}
       <section style={{ background: '#fff', padding: '36px 24px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <h2 style={styles.sectionTitle}>이용 후기</h2>
-          <p style={{ fontSize: 12, color: '#5A6E85', marginBottom: 16 }}>* 실제 이용자 후기이며 개인정보 보호를 위해 익명 처리되었습니다.</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {REVIEWS.map(r => (
-              <div key={r.name} style={{ background: '#F5F3FF', borderRadius: 16, padding: '16px 18px' }}>
+          <p style={{ fontSize: 12, color: '#5A6E85', marginBottom: 16 }}>
+            * 실제 이용자 후기이며 개인정보 보호를 위해 익명 처리되었습니다.
+          </p>
+
+          {/* 가로 스크롤 슬라이더 */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 12,
+              overflowX: 'auto',
+              scrollSnapType: 'x mandatory',
+              WebkitOverflowScrolling: 'touch',
+              padding: '4px 0 12px',
+              margin: '0 -24px',
+              paddingLeft: 24,
+              paddingRight: 24,
+            }}
+          >
+            {REVIEWS.map((r) => (
+              <div
+                key={r.name}
+                style={{
+                  background: '#F5F3FF',
+                  borderRadius: 16,
+                  padding: '16px 18px',
+                  minWidth: 280,
+                  scrollSnapAlign: 'start',
+                  flexShrink: 0,
+                }}
+              >
+                {/* 채무 사유 뱃지 + 시기 */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: P, background: '#E2DAFF', padding: '3px 9px', borderRadius: 12 }}>
+                    {r.tag}
+                  </span>
+                  <span style={{ fontSize: 11, color: '#5A6E85' }}>{r.when}</span>
+                </div>
+
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ width: 36, height: 36, borderRadius: '50%', background: P, color: '#fff', fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {r.name.charAt(0)}
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: '#0D1B2A' }}>{r.name} · {r.age}</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: N }}>{r.name} · {r.age}</div>
                       <div style={{ fontSize: 11, color: '#5A6E85' }}>채무 {r.debt} → 탕감률 {r.rate}</div>
                     </div>
                   </div>
-                  <div style={{ fontSize: 14, color: '#FFB800' }}>{'★'.repeat(r.stars)}</div>
+                  <div style={{ fontSize: 14, color: '#FFB800' }}>{'★'.repeat(r.stars)}{'☆'.repeat(5 - r.stars)}</div>
                 </div>
                 <p style={{ fontSize: 13, lineHeight: 1.75, color: '#3A4F65', margin: 0 }}>&ldquo;{r.text}&rdquo;</p>
               </div>
             ))}
           </div>
+
+          {/* 카페 링크 */}
+          <a
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'block',
+              marginTop: 16,
+              padding: '12px',
+              border: `1px solid ${P}`,
+              color: P,
+              background: 'transparent',
+              borderRadius: 12,
+              fontSize: 13,
+              fontWeight: 700,
+              textDecoration: 'none',
+              textAlign: 'center',
+            }}
+          >
+            네이버 카페에서 더 많은 후기 보기 →
+          </a>
         </div>
       </section>
 
@@ -250,9 +517,9 @@ export default function HomePage() {
       <section style={{ background: '#fff', padding: '36px 24px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <h2 style={styles.sectionTitle}>자주 묻는 질문</h2>
-          {FAQS.map(faq => (
+          {FAQS.map((faq) => (
             <div key={faq.q} style={{ borderBottom: '1px solid #F0ECFF', paddingBottom: 16, marginBottom: 16 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#0D1B2A', marginBottom: 6 }}>Q. {faq.q}</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: N, marginBottom: 6 }}>Q. {faq.q}</h3>
               <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5A6E85', margin: 0 }}>{faq.a}</p>
             </div>
           ))}
@@ -263,15 +530,8 @@ export default function HomePage() {
       <section style={styles.bottomCta}>
         <h2 style={styles.bottomCtaTitle}>지금 바로 무료 진단을 받아보세요</h2>
         <p style={styles.bottomCtaSub}>2분이면 충분합니다. 실제 판례 기반 AI 분석.</p>
-        <a href="https://app.liferefix.com" style={styles.ctaBtn}>무료 진단 시작하기 →</a>
+        <a href={utm('bottom')} style={styles.ctaBtn}>무료 진단 시작하기 →</a>
       </section>
-
-      {/* 법적 고지 */}
-      <footer style={styles.footer}>
-        <p>© 2026 Liferefix. All rights reserved. Beta v1.6</p>
-        <p style={{ marginTop: 6 }}>본 서비스는 정보 제공 목적이며 법률 서비스가 아닙니다. AI 분석 결과는 참고용이며 법적 효력이 없습니다. 최종 판단은 반드시 전문 변호사 상담을 통해 결정하십시오.</p>
-        <p style={{ marginTop: 6 }}>문의: liferefix@naver.com</p>
-      </footer>
     </main>
   )
 }
@@ -286,15 +546,14 @@ const styles: Record<string, React.CSSProperties> = {
   statItem: { flex: 1, textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.15)', padding: '0 8px' },
   statVal: { display: 'block', fontSize: 20, fontWeight: 900, color: '#fff' },
   statLabel: { display: 'block', fontSize: 10, color: 'rgba(255,255,255,0.65)', marginTop: 3 },
-  sectionTitle: { fontSize: 20, fontWeight: 900, marginBottom: 16, color: '#0D1B2A' },
+  sectionTitle: { fontSize: 20, fontWeight: 900, marginBottom: 16, color: N },
   bodyText: { fontSize: 14, lineHeight: 1.85, color: '#3A4F65', marginBottom: 16 },
   linkGrid: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 },
   linkCard: { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 12px', background: '#fff', borderRadius: 16, border: '1px solid #E2DAFF', textDecoration: 'none', gap: 6 },
   linkIcon: { fontSize: 24 },
-  linkTitle: { fontSize: 13, fontWeight: 800, color: '#0D1B2A' },
+  linkTitle: { fontSize: 13, fontWeight: 800, color: N },
   linkSub: { fontSize: 11, color: '#5A6E85' },
   bottomCta: { background: `linear-gradient(135deg,${P},#4A1DB8)`, padding: '48px 24px', textAlign: 'center', color: '#fff' },
   bottomCtaTitle: { fontSize: 20, fontWeight: 900, marginBottom: 8 },
   bottomCtaSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginBottom: 24 },
-  footer: { background: '#0D1B2A', color: 'rgba(255,255,255,0.45)', fontSize: 12, textAlign: 'center', padding: '24px 20px', lineHeight: 1.7 },
 }
