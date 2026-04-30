@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   verification: {
     google: 'Po23qTv3LggXEt-9tra8Pp5cWJNppU9OfI_3pja8Hjc',
     other: {
-      'naver-site-verification': '3e38bccf6d26d5fb4090e44dd220ebbb1e6b38ba',
+      'naver-site-verification': '7f1694a22b3795dfa87e6f9ec0fdd2f6271a418e',
     },
   },
   openGraph: {
