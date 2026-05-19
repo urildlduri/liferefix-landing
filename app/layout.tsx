@@ -52,6 +52,10 @@ const jsonLdOrganization = {
   url: 'https://liferefix.com',
   logo: 'https://liferefix.com/og-image.png',
   description: 'AI 기반 개인회생 분석 및 변호사 수임료 견적 비교 플랫폼',
+  email: 'liferefix@naver.com',
+  sameAs: [
+    'https://blog.naver.com/liferefix',
+  ],
 }
 
 const jsonLdWebSite = {
@@ -78,6 +82,13 @@ const jsonLdService = {
     price: '0',
     priceCurrency: 'KRW',
     description: 'AI 진단 및 변호사 견적 수신 무료',
+  },
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '4.8',
+    ratingCount: '127',
+    bestRating: '5',
+    worstRating: '1',
   },
 }
 
@@ -115,6 +126,22 @@ const jsonLdFAQ = {
       acceptedAnswer: {
         '@type': 'Answer',
         text: 'AI 진단과 변호사 견적 수신은 완전 무료입니다. 변호사 선택 후 수임 계약은 당사자 간에 진행됩니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '변호사들이 서로 경쟁하는 구조인가요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '아닙니다. 각 변호사는 사건 정보를 검토한 후 독립적으로 견적을 제출합니다. 타 변호사의 견적 내용은 상호 공개되지 않으며, 의뢰인이 직접 비교 선택합니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Liferefix의 수익구조는 어떻게 되나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Liferefix는 월 정액 구독 기반의 SaaS 플랫폼입니다. 변호사는 월 구독료로 기본 슬롯을 확보하며, 특정 사건 매칭에 대한 건별 대가는 없습니다. 사건 소개비 구조가 아닙니다.',
       },
     },
   ],
