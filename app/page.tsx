@@ -8,9 +8,14 @@ const M = '#00C6A2'  // 민트
 const O = '#FF8C00'  // 오렌지
 const N = '#0D1B2A'  // 네이비
 
+// 외부 링크 상수
+const APP_URL  = 'https://app.liferefix.com'
+const BLOG_URL = 'https://blog.naver.com/liferefix'
+const EMAIL    = 'liferefix@naver.com'
+
 // UTM 헬퍼
 const utm = (campaign: string) =>
-  `https://app.liferefix.com?utm_source=landing&utm_medium=cta&utm_campaign=${campaign}`
+  `${APP_URL}?utm_source=landing&utm_medium=cta&utm_campaign=${campaign}`
 
 const STATS = [
   { value: '72%', label: '평균 채무 감면율' },
@@ -27,7 +32,6 @@ const MARKET = [
   { icon: '🏦', title: '개인파산보다 회생 선택', desc: '자산 보전·소득 유지 가능한 개인회생 선호 증가.' },
 ]
 
-// Task 3: 후기 — 5/5/5/4/3 분포 + 채무 사유 + 시기
 const REVIEWS = [
   { name: '김○○', age: '40대', debt: '8,500만원', rate: '74%', text: '처음엔 너무 막막했는데 AI 진단으로 탕감 가능성을 확인하고 용기를 냈어요. 변호사 3명의 견적을 비교하고 선택할 수 있었습니다.', stars: 5, when: '2개월 전', tag: '#생활비' },
   { name: '이○○', age: '30대', debt: '5,200만원', rate: '68%', text: '변호사를 어떻게 찾아야 할지 몰랐는데 여러 분이 직접 견적을 보내주시니 편했어요. 착수금도 다른 곳보다 훨씬 합리적이었습니다.', stars: 5, when: '4개월 전', tag: '#카드채무' },
@@ -53,12 +57,7 @@ const FAQS = [
 
 // 2026 최저생계비
 const LIVING_COST: Record<number, number> = {
-  0: 154,  // 1인 (본인만)
-  1: 252,  // 2인
-  2: 322,  // 3인
-  3: 390,  // 4인
-  4: 450,  // 5인 이상
-  5: 450,
+  0: 154, 1: 252, 2: 322, 3: 390, 4: 450, 5: 450,
 }
 
 interface CalcResult {
@@ -80,7 +79,6 @@ function calcRate(debt: number, inc: number, dep: number, minorChildren: number 
     return { ok: true, rate: 99, monthly: 0, period: 36, reason: `월소득(${inc}만원)이 최저생계비(${minC}만원) 이하 — 변제 부담이 거의 없습니다.` }
   }
 
-  // 미성년 자녀 2명 이상 시 24개월 단축
   const period = minorChildren >= 2 ? 24 : 36
   const monthly = Math.round(disp * 0.5)
   const totalRepay = monthly * period
@@ -89,7 +87,6 @@ function calcRate(debt: number, inc: number, dep: number, minorChildren: number 
   return { ok: true, rate, monthly, period }
 }
 
-// Task 1: 카운트업 애니메이션 훅
 function useCountUp(target: number, duration = 600): number {
   const [val, setVal] = useState(target)
   const prevRef = useRef(target)
@@ -102,7 +99,7 @@ function useCountUp(target: number, duration = 600): number {
     const tick = (now: number) => {
       const elapsed = now - startTime
       const t = Math.min(1, elapsed / duration)
-      const eased = 1 - Math.pow(1 - t, 3) // easeOutCubic
+      const eased = 1 - Math.pow(1 - t, 3)
       setVal(Math.round(start + diff * eased))
       if (t < 1) raf = requestAnimationFrame(tick)
       else prevRef.current = target
@@ -113,7 +110,6 @@ function useCountUp(target: number, duration = 600): number {
   return val
 }
 
-// Task 1: 인터랙티브 계산기 컴포넌트
 function InteractiveCalculator() {
   const [debt, setDebt] = useState(5000)
   const [income, setIncome] = useState(250)
@@ -127,76 +123,48 @@ function InteractiveCalculator() {
 
   return (
     <div style={{ background: '#F5F3FF', borderRadius: 16, padding: 20, marginBottom: 16 }}>
-      {/* 채무액 */}
       <div style={{ marginBottom: 18 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
           <label style={{ fontSize: 13, fontWeight: 700, color: N }}>총 채무액</label>
           <span style={{ fontSize: 14, fontWeight: 900, color: P }}>{debt.toLocaleString()}만원</span>
         </div>
-        <input
-          type="range"
-          min={500}
-          max={50000}
-          step={100}
-          value={debt}
+        <input type="range" min={500} max={50000} step={100} value={debt}
           onChange={(e) => setDebt(Number(e.target.value))}
-          style={{ width: '100%', accentColor: P }}
-        />
+          style={{ width: '100%', accentColor: P }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#5A6E85', marginTop: 2 }}>
-          <span>500만</span>
-          <span>5억</span>
+          <span>500만</span><span>5억</span>
         </div>
       </div>
 
-      {/* 월 소득 */}
       <div style={{ marginBottom: 18 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
           <label style={{ fontSize: 13, fontWeight: 700, color: N }}>월 소득</label>
           <span style={{ fontSize: 14, fontWeight: 900, color: P }}>{income.toLocaleString()}만원</span>
         </div>
-        <input
-          type="range"
-          min={50}
-          max={1000}
-          step={10}
-          value={income}
+        <input type="range" min={50} max={1000} step={10} value={income}
           onChange={(e) => setIncome(Number(e.target.value))}
-          style={{ width: '100%', accentColor: P }}
-        />
+          style={{ width: '100%', accentColor: P }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#5A6E85', marginTop: 2 }}>
-          <span>50만</span>
-          <span>1,000만</span>
+          <span>50만</span><span>1,000만</span>
         </div>
       </div>
 
-      {/* 부양가족 */}
       <div style={{ marginBottom: 18 }}>
         <label style={{ fontSize: 13, fontWeight: 700, color: N, display: 'block', marginBottom: 8 }}>부양가족 수 (본인 제외)</label>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 6 }}>
           {[0, 1, 2, 3, 4, 5].map((n) => (
-            <button
-              key={n}
-              type="button"
-              onClick={() => setDep(n)}
+            <button key={n} type="button" onClick={() => setDep(n)}
               style={{
-                padding: '10px 0',
-                borderRadius: 10,
+                padding: '10px 0', borderRadius: 10,
                 border: dep === n ? `2px solid ${P}` : '1px solid #E2DAFF',
                 background: dep === n ? P : '#fff',
                 color: dep === n ? '#fff' : '#5A6E85',
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
-              {n === 5 ? '5+' : n}명
-            </button>
+                fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{n === 5 ? '5+' : n}명</button>
           ))}
         </div>
       </div>
 
-      {/* 미성년 자녀 (부양가족이 있을 때만) */}
       {dep > 0 && (
         <div style={{ marginBottom: 18 }}>
           <label style={{ fontSize: 13, fontWeight: 700, color: N, display: 'block', marginBottom: 8 }}>
@@ -205,30 +173,19 @@ function InteractiveCalculator() {
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${dep + 1},1fr)`, gap: 6 }}>
             {Array.from({ length: dep + 1 }, (_, i) => i).map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setMinor(n)}
+              <button key={n} type="button" onClick={() => setMinor(n)}
                 style={{
-                  padding: '10px 0',
-                  borderRadius: 10,
+                  padding: '10px 0', borderRadius: 10,
                   border: minor === n ? `2px solid ${O}` : '1px solid #E2DAFF',
                   background: minor === n ? O : '#fff',
                   color: minor === n ? '#fff' : '#5A6E85',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
-                {n}명
-              </button>
+                  fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                }}>{n}명</button>
             ))}
           </div>
         </div>
       )}
 
-      {/* 결과 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 12 }}>
         <div style={{ background: '#fff', borderRadius: 12, padding: '14px 8px', textAlign: 'center' }}>
           <div style={{ fontSize: 11, color: '#5A6E85', marginBottom: 4 }}>예상 탕감률</div>
@@ -254,21 +211,12 @@ function InteractiveCalculator() {
         참고용 수치이며 실제 결과와 다를 수 있습니다
       </p>
 
-      <a
-        href={utm('calculator')}
+      <a href={utm('calculator')}
         style={{
-          display: 'block',
-          background: M,
-          color: '#fff',
-          borderRadius: 14,
-          padding: '14px',
-          fontSize: 14,
-          fontWeight: 800,
-          textDecoration: 'none',
-          textAlign: 'center',
+          display: 'block', background: M, color: '#fff', borderRadius: 14, padding: '14px',
+          fontSize: 14, fontWeight: 800, textDecoration: 'none', textAlign: 'center',
           boxShadow: '0 8px 20px rgba(0,198,162,0.3)',
-        }}
-      >
+        }}>
         내 정확한 탕감률 계산하기 →
       </a>
     </div>
@@ -298,7 +246,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Task 1: 인터랙티브 계산기 */}
+      {/* 인터랙티브 계산기 */}
       <section style={{ background: '#fff', padding: '36px 24px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <h2 style={styles.sectionTitle}>📊 탕감률 간이 계산기</h2>
@@ -373,7 +321,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3단계 + Task 2: 보라 CTA */}
+      {/* 3단계 */}
       <section style={{ padding: '36px 24px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <h2 style={styles.sectionTitle}>3단계로 끝나는 채무 해결</h2>
@@ -386,27 +334,18 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <a
-            href={utm('flow')}
+          <a href={utm('flow')}
             style={{
-              display: 'block',
-              background: P,
-              color: '#fff',
-              borderRadius: 14,
-              padding: '14px',
-              fontSize: 15,
-              fontWeight: 800,
-              textDecoration: 'none',
-              textAlign: 'center',
+              display: 'block', background: P, color: '#fff', borderRadius: 14, padding: '14px',
+              fontSize: 15, fontWeight: 800, textDecoration: 'none', textAlign: 'center',
               boxShadow: '0 8px 20px rgba(106,61,232,0.3)',
-            }}
-          >
+            }}>
             지금 1단계 시작하기 →
           </a>
         </div>
       </section>
 
-      {/* Task 3: 이용 후기 - 가로 스크롤 + 채무사유 + 시기 */}
+      {/* 이용 후기 */}
       <section style={{ background: '#fff', padding: '36px 24px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <h2 style={styles.sectionTitle}>이용 후기</h2>
@@ -414,37 +353,19 @@ export default function HomePage() {
             * 실제 이용자 후기이며 개인정보 보호를 위해 익명 처리되었습니다.
           </p>
 
-          {/* 가로 스크롤 슬라이더 */}
-          <div
-            style={{
-              display: 'flex',
-              gap: 12,
-              overflowX: 'auto',
-              scrollSnapType: 'x mandatory',
-              WebkitOverflowScrolling: 'touch',
-              padding: '4px 0 12px',
-              margin: '0 -24px',
-              paddingLeft: 24,
-              paddingRight: 24,
-            }}
-          >
+          <div style={{
+            display: 'flex', gap: 12, overflowX: 'auto',
+            scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch',
+            padding: '4px 0 12px', margin: '0 -24px',
+            paddingLeft: 24, paddingRight: 24,
+          }}>
             {REVIEWS.map((r) => (
-              <div
-                key={r.name}
-                style={{
-                  background: '#F5F3FF',
-                  borderRadius: 16,
-                  padding: '16px 18px',
-                  minWidth: 280,
-                  scrollSnapAlign: 'start',
-                  flexShrink: 0,
-                }}
-              >
-                {/* 채무 사유 뱃지 + 시기 */}
+              <div key={r.name} style={{
+                background: '#F5F3FF', borderRadius: 16, padding: '16px 18px',
+                minWidth: 280, scrollSnapAlign: 'start', flexShrink: 0,
+              }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: P, background: '#E2DAFF', padding: '3px 9px', borderRadius: 12 }}>
-                    {r.tag}
-                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: P, background: '#E2DAFF', padding: '3px 9px', borderRadius: 12 }}>{r.tag}</span>
                   <span style={{ fontSize: 11, color: '#5A6E85' }}>{r.when}</span>
                 </div>
 
@@ -465,26 +386,14 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* 카페 링크 */}
-          <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
+          <a href={BLOG_URL} target="_blank" rel="noopener noreferrer"
             style={{
-              display: 'block',
-              marginTop: 16,
-              padding: '12px',
-              border: `1px solid ${P}`,
-              color: P,
-              background: 'transparent',
-              borderRadius: 12,
-              fontSize: 13,
-              fontWeight: 700,
-              textDecoration: 'none',
-              textAlign: 'center',
-            }}
-          >
-            네이버 카페에서 더 많은 후기 보기 →
+              display: 'block', marginTop: 16, padding: '12px',
+              border: `1px solid ${P}`, color: P, background: 'transparent',
+              borderRadius: 12, fontSize: 13, fontWeight: 700,
+              textDecoration: 'none', textAlign: 'center',
+            }}>
+            📝 네이버 블로그에서 더 많은 정보 보기 →
           </a>
         </div>
       </section>
@@ -532,6 +441,7 @@ export default function HomePage() {
         <p style={styles.bottomCtaSub}>2분이면 충분합니다. 실제 판례 기반 AI 분석.</p>
         <a href={utm('bottom')} style={styles.ctaBtn}>무료 진단 시작하기 →</a>
       </section>
+
     </main>
   )
 }
